@@ -1,0 +1,74 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+import org.json.JSONObject;
+
+public class CurrencyConverter {
+
+    // Replace with your API Key
+    private static final String API_KEY = "YOUR_API_KEY";
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("======================================");
+        System.out.println("        CURRENCY CONVERTER");
+        System.out.println("======================================");
+
+        System.out.print("Enter Base Currency (Example: USD, INR): ");
+        String base = sc.next().toUpperCase();
+
+        System.out.print("Enter Target Currency (Example: EUR, INR): ");
+        String target = sc.next().toUpperCase();
+
+        System.out.print("Enter Amount: ");
+        double amount = sc.nextDouble();
+
+        try {
+
+            String urlString = "https://v6.exchangerate-api.com/v6/"
+                    + API_KEY + "/latest/" + base;
+
+            URL url = new URL(urlString);
+
+            HttpURLConnection connection =
+                    (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("GET");
+
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+
+            reader.close();
+
+            JSONObject json = new JSONObject(response.toString());
+
+            JSONObject rates = json.getJSONObject("conversion_rates");
+
+            double rate = rates.getDouble(target);
+
+            double convertedAmount = amount * rate;
+
+            System.out.println("\n========== RESULT ==========");
+            System.out.println(amount + " " + base + " = "
+                    + String.format("%.2f", convertedAmount)
+                    + " " + target);
+            System.out.println("============================");
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        sc.close();
+    }
+}
